@@ -15,7 +15,7 @@ const StepWrapper = ({ children, stepKey }: StepWrapperProps) => {
   return (
     <div
       key={stepKey}
-      className={`flex flex-col items-center justify-center min-h-screen px-6 text-center ${animClass}`}
+      className={`flex flex-col items-center justify-center min-h-screen px-6 text-center w-full ${animClass}`}
     >
       {children}
     </div>

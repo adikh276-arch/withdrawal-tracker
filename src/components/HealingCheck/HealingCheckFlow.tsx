@@ -22,10 +22,19 @@ const SYMPTOMS = [
 ];
 
 function intensityLabel(val: number) {
-  if (val <= 3) return "Light";
-  if (val <= 6) return "Manageable";
+  if (val <= 2) return "Very Mild";
+  if (val <= 4) return "Mild";
+  if (val <= 6) return "Moderate";
   if (val <= 8) return "Strong";
-  return "Very intense";
+  return "Very Strong";
+}
+
+function supportLine(val: number) {
+  if (val <= 2) return { primary: "This is just a passing signal.", secondary: "You're still in control." };
+  if (val <= 4) return { primary: "You've handled this level before.", secondary: "It doesn't have to turn into action." };
+  if (val <= 6) return { primary: "This is the moment to pause.", secondary: "Take one breath before deciding." };
+  if (val <= 8) return { primary: "This feels intense, but it will peak and pass.", secondary: "You don't have to respond immediately." };
+  return { primary: "This is a wave.", secondary: "Pause for one minute before doing anything." };
 }
 
 const HealingCheckFlow = () => {
@@ -181,12 +190,26 @@ const HealingCheckFlow = () => {
           </div>
         </div>
         <p
-          className="text-accent-foreground font-body text-lg font-medium mb-8 transition-opacity duration-300"
+          className="text-accent-foreground font-body text-lg font-medium mb-2 transition-opacity duration-300"
           key={intensityLabel(intensity)}
           style={{ animation: "softFade 300ms ease-in forwards" }}
         >
           {intensity} — {intensityLabel(intensity)}
         </p>
+        {sliderTouched && (
+          <div
+            key={`support-${intensityLabel(intensity)}`}
+            className="mb-8 max-w-xs"
+            style={{ animation: "softFade 200ms ease-in forwards" }}
+          >
+            <p className="text-foreground font-body text-sm font-medium mb-1">
+              {supportLine(intensity).primary}
+            </p>
+            <p className="text-muted-foreground font-body text-sm">
+              {supportLine(intensity).secondary}
+            </p>
+          </div>
+        )}
         {sliderTouched && (
           <FlowButton
             variant="primary"
