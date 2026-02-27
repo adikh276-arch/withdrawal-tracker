@@ -224,6 +224,7 @@ const HealingCheckFlow = () => {
   }
 
   if (step === "yes-reassurance") {
+    const support = supportLine(intensity);
     return (
       <StepWrapper stepKey="yes-reassurance">
         <div className="relative flex flex-col items-center">
@@ -235,10 +236,10 @@ const HealingCheckFlow = () => {
             />
           </div>
           <p className="font-heading text-2xl font-semibold text-foreground mb-4 animate-soft-fade">
-            This is temporary.
+            {support.primary}
           </p>
           <p className="text-muted-foreground font-body text-base max-w-xs leading-relaxed mb-10 animate-delayed-fade">
-            Withdrawal means your body is recalibrating.
+            {support.secondary}
           </p>
           <FlowButton variant="primary" onClick={() => goTo("yes-done")}>
             I understand
