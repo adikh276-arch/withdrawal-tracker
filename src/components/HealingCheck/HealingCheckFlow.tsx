@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import StepWrapper from "./StepWrapper";
 import FlowButton from "./FlowButton";
+import HistoryScreen from "./HistoryScreen";
+import { saveCheckIn } from "./historyStore";
 
 type Step =
   | "start"
@@ -10,6 +12,8 @@ type Step =
   | "yes-intensity"
   | "yes-reassurance"
   | "yes-done";
+
+type View = "flow" | "history";
 
 const SYMPTOMS = [
   "Irritability",
@@ -38,6 +42,7 @@ function supportLine(val: number) {
 }
 
 const HealingCheckFlow = () => {
+  const [view, setView] = useState<View>("flow");
   const [step, setStep] = useState<Step>("start");
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [otherText, setOtherText] = useState("");
@@ -55,10 +60,20 @@ const HealingCheckFlow = () => {
     );
   };
 
-  const handleFinish = () => {
+  const handleFinish = (path: "no-symptoms" | "yes-symptoms") => {
+    // Save to history
+    saveCheckIn({
+      path,
+      ...(path === "yes-symptoms" && {
+        symptoms: selectedSymptoms,
+        otherText: otherText || undefined,
+        intensity,
+        intensityLabel: intensityLabel(intensity),
+      }),
+    });
+
     setCompleting(true);
     setTimeout(() => {
-      // Reset flow
       setStep("start");
       setSelectedSymptoms([]);
       setOtherText("");
@@ -67,6 +82,10 @@ const HealingCheckFlow = () => {
       setCompleting(false);
     }, 600);
   };
+
+  if (view === "history") {
+    return <HistoryScreen onBack={() => setView("flow")} />;
+  }
 
   if (step === "start") {
     return (
@@ -88,6 +107,12 @@ const HealingCheckFlow = () => {
             No
           </FlowButton>
         </div>
+        <button
+          onClick={() => setView("history")}
+          className="mt-8 text-muted-foreground font-body text-sm underline underline-offset-4 hover:text-foreground transition-colors"
+        >
+          View check-in history
+        </button>
       </StepWrapper>
     );
   }
@@ -118,7 +143,7 @@ const HealingCheckFlow = () => {
           <p className="text-muted-foreground font-body text-base mb-10 max-w-xs leading-relaxed animate-delayed-fade">
             Each day without nicotine helps your body reset.
           </p>
-          <FlowButton variant="primary" onClick={handleFinish}>
+          <FlowButton variant="primary" onClick={() => handleFinish("no-symptoms")}>
             Done
           </FlowButton>
         </div>
@@ -228,7 +253,6 @@ const HealingCheckFlow = () => {
     return (
       <StepWrapper stepKey="yes-reassurance">
         <div className="relative flex flex-col items-center">
-          {/* Ripple effect */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
             <div
               className="w-48 h-48 rounded-full bg-secondary animate-ripple-pulse"
@@ -260,7 +284,7 @@ const HealingCheckFlow = () => {
             Your body is learning to function without nicotine — and that's
             powerful.
           </p>
-          <FlowButton variant="primary" onClick={handleFinish}>
+          <FlowButton variant="primary" onClick={() => handleFinish("yes-symptoms")}>
             Finish Check-In
           </FlowButton>
         </div>
