@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { getHistory, groupByDate, type CheckInEntry } from "./historyStore";
 import FlowButton from "./FlowButton";
 
@@ -5,16 +6,9 @@ interface HistoryScreenProps {
   onBack: () => void;
 }
 
-function intensityLabel(val: number) {
-  if (val <= 2) return "Very Mild";
-  if (val <= 4) return "Mild";
-  if (val <= 6) return "Moderate";
-  if (val <= 8) return "Strong";
-  return "Very Strong";
-}
-
 const EntryCard = ({ entry }: { entry: CheckInEntry }) => {
-  const time = new Date(entry.date).toLocaleTimeString("en-US", {
+  const { t } = useTranslation();
+  const time = new Date(entry.date).toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -24,13 +18,12 @@ const EntryCard = ({ entry }: { entry: CheckInEntry }) => {
       <div className="flex items-center justify-between mb-2">
         <span className="text-muted-foreground font-body text-sm">{time}</span>
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-            entry.path === "no-symptoms"
+          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${entry.path === "no-symptoms"
               ? "bg-secondary/30 text-secondary-foreground"
               : "bg-accent/30 text-accent-foreground"
-          }`}
+            }`}
         >
-          {entry.path === "no-symptoms" ? "No symptoms" : "Symptoms logged"}
+          {entry.path === "no-symptoms" ? t("no_symptoms") : t("symptoms_logged")}
         </span>
       </div>
 
@@ -60,7 +53,7 @@ const EntryCard = ({ entry }: { entry: CheckInEntry }) => {
                 />
               </div>
               <span className="text-xs font-medium text-foreground whitespace-nowrap">
-                {entry.intensity}/10 · {intensityLabel(entry.intensity)}
+                {entry.intensity}/10 · {entry.intensityLabel}
               </span>
             </div>
           )}
@@ -71,6 +64,7 @@ const EntryCard = ({ entry }: { entry: CheckInEntry }) => {
 };
 
 const HistoryScreen = ({ onBack }: HistoryScreenProps) => {
+  const { t } = useTranslation();
   const history = getHistory();
   const grouped = groupByDate(history);
   const dateKeys = Object.keys(grouped);
@@ -87,14 +81,14 @@ const HistoryScreen = ({ onBack }: HistoryScreenProps) => {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <h1 className="font-heading text-2xl font-semibold text-foreground">Check-In History</h1>
+        <h1 className="font-heading text-2xl font-semibold text-foreground">{t("checkin_history")}</h1>
       </div>
 
       {dateKeys.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center">
-          <p className="text-muted-foreground font-body text-base mb-2">No check-ins yet.</p>
+          <p className="text-muted-foreground font-body text-base mb-2">{t("no_checkins_yet")}</p>
           <p className="text-muted-foreground/70 font-body text-sm">
-            Complete your first Healing Check to start tracking.
+            {t("complete_first_checkin")}
           </p>
         </div>
       ) : (
@@ -116,7 +110,7 @@ const HistoryScreen = ({ onBack }: HistoryScreenProps) => {
 
       <div className="pt-4">
         <FlowButton variant="primary" onClick={onBack}>
-          Back to Check-In
+          {t("back_to_checkin")}
         </FlowButton>
       </div>
     </div>

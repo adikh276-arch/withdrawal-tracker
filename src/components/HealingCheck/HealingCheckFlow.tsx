@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import StepWrapper from "./StepWrapper";
 import FlowButton from "./FlowButton";
 import HistoryScreen from "./HistoryScreen";
@@ -16,32 +17,17 @@ type Step =
 type View = "flow" | "history";
 
 const SYMPTOMS = [
-  "Irritability",
-  "Restlessness",
-  "Headache",
-  "Low mood",
-  "Trouble sleeping",
-  "Strong cravings",
-  "Other",
+  "irritability",
+  "restlessness",
+  "headache",
+  "low_mood",
+  "trouble_sleeping",
+  "strong_cravings",
+  "other",
 ];
 
-function intensityLabel(val: number) {
-  if (val <= 2) return "Very Mild";
-  if (val <= 4) return "Mild";
-  if (val <= 6) return "Moderate";
-  if (val <= 8) return "Strong";
-  return "Very Strong";
-}
-
-function supportLine(val: number) {
-  if (val <= 2) return { primary: "This is just a passing signal.", secondary: "You're still in control." };
-  if (val <= 4) return { primary: "You've handled this level before.", secondary: "It doesn't have to turn into action." };
-  if (val <= 6) return { primary: "This is the moment to pause.", secondary: "Take one breath before deciding." };
-  if (val <= 8) return { primary: "This feels intense, but it will peak and pass.", secondary: "You don't have to respond immediately." };
-  return { primary: "This is a wave.", secondary: "Pause for one minute before doing anything." };
-}
-
 const HealingCheckFlow = () => {
+  const { t } = useTranslation();
   const [view, setView] = useState<View>("flow");
   const [step, setStep] = useState<Step>("start");
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
@@ -49,6 +35,22 @@ const HealingCheckFlow = () => {
   const [intensity, setIntensity] = useState(5);
   const [sliderTouched, setSliderTouched] = useState(false);
   const [completing, setCompleting] = useState(false);
+
+  const intensityLabel = (val: number) => {
+    if (val <= 2) return t("very_mild");
+    if (val <= 4) return t("mild");
+    if (val <= 6) return t("moderate");
+    if (val <= 8) return t("strong");
+    return t("very_strong");
+  };
+
+  const supportLine = (val: number) => {
+    if (val <= 2) return { primary: t("passing_signal"), secondary: t("still_in_control") };
+    if (val <= 4) return { primary: t("handled_level_before"), secondary: t("not_turn_into_action") };
+    if (val <= 6) return { primary: t("moment_to_pause"), secondary: t("take_one_breath") };
+    if (val <= 8) return { primary: t("feels_intense"), secondary: t("not_respond_immediately") };
+    return { primary: t("this_is_a_wave"), secondary: t("pause_one_minute") };
+  };
 
   const goTo = useCallback((next: Step) => {
     setStep(next);
@@ -65,7 +67,7 @@ const HealingCheckFlow = () => {
     saveCheckIn({
       path,
       ...(path === "yes-symptoms" && {
-        symptoms: selectedSymptoms,
+        symptoms: selectedSymptoms.map(s => t(s)),
         otherText: otherText || undefined,
         intensity,
         intensityLabel: intensityLabel(intensity),
@@ -91,20 +93,20 @@ const HealingCheckFlow = () => {
     return (
       <StepWrapper stepKey="start">
         <h1 className="font-heading text-3xl font-semibold text-foreground mb-2">
-          🌿 Healing Check
+          🌿 {t("healing_check")}
         </h1>
         <p className="text-muted-foreground font-body text-base mb-10 leading-relaxed">
-          Your body is adjusting.
+          {t("body_adjusting")}
         </p>
         <p className="text-foreground font-body text-lg mb-8 max-w-xs leading-relaxed">
-          Are you feeling any withdrawal symptoms right now?
+          {t("feeling_symptoms")}
         </p>
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <FlowButton variant="primary" onClick={() => goTo("yes-symptoms")}>
-            Yes
+            {t("yes")}
           </FlowButton>
           <FlowButton variant="default" onClick={() => goTo("no-confirm")}>
-            No
+            {t("no")}
           </FlowButton>
         </div>
         <button
@@ -116,7 +118,7 @@ const HealingCheckFlow = () => {
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          View check-in history
+          {t("view_history")}
         </button>
       </StepWrapper>
     );
@@ -126,13 +128,13 @@ const HealingCheckFlow = () => {
     return (
       <StepWrapper stepKey="no-confirm">
         <p className="font-heading text-2xl font-semibold text-foreground mb-4 animate-soft-fade">
-          No noticeable symptoms.
+          {t("no_noticeable_symptoms")}
         </p>
         <p className="text-secondary font-body text-lg mb-10 animate-delayed-fade">
-          That's a good sign.
+          {t("thats_a_good_sign")}
         </p>
         <FlowButton variant="primary" onClick={() => goTo("no-done")}>
-          Continue
+          {t("continue")}
         </FlowButton>
       </StepWrapper>
     );
@@ -143,13 +145,13 @@ const HealingCheckFlow = () => {
       <StepWrapper stepKey="no-done">
         <div className={completing ? "animate-completion" : ""}>
           <p className="font-heading text-2xl font-semibold text-foreground mb-4 animate-soft-fade">
-            Your system is stabilizing.
+            {t("system_stabilizing")}
           </p>
           <p className="text-muted-foreground font-body text-base mb-10 max-w-xs leading-relaxed animate-delayed-fade">
-            Each day without nicotine helps your body reset.
+            {t("day_without_nicotine")}
           </p>
           <FlowButton variant="primary" onClick={() => handleFinish("no-symptoms")}>
-            Done
+            {t("done")}
           </FlowButton>
         </div>
       </StepWrapper>
@@ -160,7 +162,7 @@ const HealingCheckFlow = () => {
     return (
       <StepWrapper stepKey="yes-symptoms">
         <p className="font-heading text-2xl font-semibold text-foreground mb-6">
-          What feels most noticeable?
+          {t("what_feels_noticeable")}
         </p>
         <div className="flex flex-col gap-2.5 w-full max-w-xs mb-8">
           {SYMPTOMS.map((s) => (
@@ -169,15 +171,15 @@ const HealingCheckFlow = () => {
               variant={selectedSymptoms.includes(s) ? "sage-selected" : "option"}
               onClick={() => toggleSymptom(s)}
             >
-              {s}
+              {t(s)}
             </FlowButton>
           ))}
         </div>
-        {selectedSymptoms.includes("Other") && (
+        {selectedSymptoms.includes("other") && (
           <textarea
             value={otherText}
             onChange={(e) => setOtherText(e.target.value)}
-            placeholder="Describe what you're feeling..."
+            placeholder={t("describe_feeling")}
             className="w-full max-w-xs rounded-lg border border-border bg-card p-3 font-body text-sm text-foreground placeholder:text-muted-foreground resize-none mb-6 focus:outline-none focus:ring-2 focus:ring-secondary"
             style={{ borderRadius: 16 }}
             rows={3}
@@ -189,7 +191,7 @@ const HealingCheckFlow = () => {
             onClick={() => goTo("yes-intensity")}
             className="animate-soft-fade"
           >
-            Continue
+            {t("continue")}
           </FlowButton>
         )}
       </StepWrapper>
@@ -200,7 +202,7 @@ const HealingCheckFlow = () => {
     return (
       <StepWrapper stepKey="yes-intensity">
         <p className="font-heading text-2xl font-semibold text-foreground mb-10">
-          How intense is it right now?
+          {t("how_intense")}
         </p>
         <div className="w-full max-w-xs mb-4">
           <input
@@ -221,7 +223,7 @@ const HealingCheckFlow = () => {
         </div>
         <p
           className="text-accent-foreground font-body text-lg font-medium mb-8 transition-opacity duration-300"
-          key={intensityLabel(intensity)}
+          key={intensity}
           style={{ animation: "softFade 300ms ease-in forwards" }}
         >
           {intensity} — {intensityLabel(intensity)}
@@ -232,7 +234,7 @@ const HealingCheckFlow = () => {
             onClick={() => goTo("yes-reassurance")}
             className="animate-soft-fade"
           >
-            Continue
+            {t("continue")}
           </FlowButton>
         )}
       </StepWrapper>
@@ -257,7 +259,7 @@ const HealingCheckFlow = () => {
             {support.secondary}
           </p>
           <FlowButton variant="primary" onClick={() => goTo("yes-done")}>
-            I understand
+            {t("i_understand")}
           </FlowButton>
         </div>
       </StepWrapper>
@@ -269,14 +271,13 @@ const HealingCheckFlow = () => {
       <StepWrapper stepKey="yes-done">
         <div className={completing ? "animate-completion" : ""}>
           <p className="font-heading text-2xl font-semibold text-foreground mb-4 animate-soft-fade">
-            You're healing, even if it's uncomfortable.
+            {t("healing_uncomfortable")}
           </p>
           <p className="text-muted-foreground font-body text-base max-w-xs leading-relaxed mb-10 animate-delayed-fade">
-            Your body is learning to function without nicotine — and that's
-            powerful.
+            {t("body_learning")}
           </p>
           <FlowButton variant="primary" onClick={() => handleFinish("yes-symptoms")}>
-            Finish Check-In
+            {t("finish_checkin")}
           </FlowButton>
         </div>
       </StepWrapper>
