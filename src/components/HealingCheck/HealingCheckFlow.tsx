@@ -62,9 +62,9 @@ const HealingCheckFlow = () => {
     );
   };
 
-  const handleFinish = (path: "no-symptoms" | "yes-symptoms") => {
+  const handleFinish = async (path: "no-symptoms" | "yes-symptoms") => {
     // Save to history
-    saveCheckIn({
+    await saveCheckIn({
       path,
       ...(path === "yes-symptoms" && {
         symptoms: selectedSymptoms.map(s => t(s)),

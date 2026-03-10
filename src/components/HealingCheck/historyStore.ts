@@ -1,3 +1,5 @@
+import { pool } from "@/lib/db";
+
 export interface CheckInEntry {
   id: string;
   date: string; // ISO string
@@ -8,23 +10,51 @@ export interface CheckInEntry {
   intensityLabel?: string;
 }
 
-const STORAGE_KEY = "healing-check-history";
+export async function saveCheckIn(entry: Omit<CheckInEntry, "id" | "date">): Promise<void> {
+  const userId = sessionStorage.getItem("user_id");
+  if (!userId) return;
 
-export function saveCheckIn(entry: Omit<CheckInEntry, "id" | "date">): void {
-  const history = getHistory();
-  history.unshift({
-    ...entry,
-    id: crypto.randomUUID(),
-    date: new Date().toISOString(),
-  });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  try {
+    await pool.query(
+      `INSERT INTO withdrawal_logs 
+       (user_id, path, symptoms, other_text, intensity, intensity_label) 
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        BigInt(userId),
+        entry.path,
+        entry.symptoms,
+        entry.otherText,
+        entry.intensity,
+        entry.intensityLabel
+      ]
+    );
+  } catch (error) {
+    console.error("Failed to save check-in:", error);
+    throw error;
+  }
 }
 
-export function getHistory(): CheckInEntry[] {
+export async function getHistory(): Promise<CheckInEntry[]> {
+  const userId = sessionStorage.getItem("user_id");
+  if (!userId) return [];
+
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+    const res = await pool.query(
+      "SELECT * FROM withdrawal_logs WHERE user_id = $1 ORDER BY date DESC",
+      [BigInt(userId)]
+    );
+
+    return res.rows.map(row => ({
+      id: row.id,
+      date: row.date.toISOString(),
+      path: row.path,
+      symptoms: row.symptoms,
+      otherText: row.other_text,
+      intensity: row.intensity,
+      intensityLabel: row.intensity_label
+    }));
+  } catch (error) {
+    console.error("Failed to fetch history:", error);
     return [];
   }
 }

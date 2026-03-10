@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getHistory, groupByDate, type CheckInEntry } from "./historyStore";
 import FlowButton from "./FlowButton";
@@ -19,8 +20,8 @@ const EntryCard = ({ entry }: { entry: CheckInEntry }) => {
         <span className="text-muted-foreground font-body text-sm">{time}</span>
         <span
           className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${entry.path === "no-symptoms"
-              ? "bg-secondary/30 text-secondary-foreground"
-              : "bg-accent/30 text-accent-foreground"
+            ? "bg-secondary/30 text-secondary-foreground"
+            : "bg-accent/30 text-accent-foreground"
             }`}
         >
           {entry.path === "no-symptoms" ? t("no_symptoms") : t("symptoms_logged")}
@@ -65,7 +66,18 @@ const EntryCard = ({ entry }: { entry: CheckInEntry }) => {
 
 const HistoryScreen = ({ onBack }: HistoryScreenProps) => {
   const { t } = useTranslation();
-  const history = getHistory();
+  const [history, setHistory] = useState<CheckInEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const data = await getHistory();
+      setHistory(data);
+      setLoading(false);
+    };
+    fetchHistory();
+  }, []);
+
   const grouped = groupByDate(history);
   const dateKeys = Object.keys(grouped);
 
@@ -84,7 +96,11 @@ const HistoryScreen = ({ onBack }: HistoryScreenProps) => {
         <h1 className="font-heading text-2xl font-semibold text-foreground">{t("checkin_history")}</h1>
       </div>
 
-      {dateKeys.length === 0 ? (
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-secondary" />
+        </div>
+      ) : dateKeys.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center">
           <p className="text-muted-foreground font-body text-base mb-2">{t("no_checkins_yet")}</p>
           <p className="text-muted-foreground/70 font-body text-sm">

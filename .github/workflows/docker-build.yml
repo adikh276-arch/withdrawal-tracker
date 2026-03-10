@@ -26,3 +26,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: bunker.mantracare.com/lovable/withdrawal_tracker:1.0
+          build-args: |
+             VITE_DATABASE_URL=${{ secrets.VITE_DATABASE_URL }}
+             VITE_NEON_PROJECT_ID=${{ secrets.VITE_NEON_PROJECT_ID }}
+             VITE_NEON_API_KEY=${{ secrets.VITE_NEON_API_KEY }}
